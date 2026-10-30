@@ -1261,7 +1261,9 @@ export default class HTMLInputElement extends HTMLElement {
 		this.#selectionEnd = this.value.length;
 		this.#selectionDirection = HTMLInputElementSelectionDirectionEnum.none;
 
-		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: false }));
+		this[PropertySymbol.window].setTimeout(() =>
+			this.dispatchEvent(new Event('select', { bubbles: true, cancelable: false }))
+		);
 	}
 
 	/**
@@ -1286,7 +1288,9 @@ export default class HTMLInputElement extends HTMLElement {
 			direction === HTMLInputElementSelectionDirectionEnum.backward
 				? direction
 				: HTMLInputElementSelectionDirectionEnum.none;
-		this.dispatchEvent(new Event('select', { bubbles: true, cancelable: false }));
+		this[PropertySymbol.window].setTimeout(() =>
+			this.dispatchEvent(new Event('select', { bubbles: true, cancelable: false }))
+		);
 	}
 
 	/**

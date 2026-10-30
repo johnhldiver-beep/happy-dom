@@ -131,6 +131,16 @@ describe('HTMLTextAreaElement', () => {
 			element.selectionEnd = 5;
 			expect(element.selectionEnd).toBe(5);
 		});
+
+		it('Queues a select event when setting the property.', async () => {
+			let selectCount = 0;
+			element.addEventListener('select', () => selectCount++);
+			element.value = 'TEST_VALUE';
+			element.selectionEnd = 5;
+			expect(selectCount).toBe(0);
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
+			expect(selectCount).toBe(1);
+		});
 	});
 
 	describe('get form()', () => {
@@ -361,28 +371,32 @@ describe('HTMLTextAreaElement', () => {
 	}
 
 	describe('select()', () => {
-		it('Selects all text.', () => {
-			let triggeredEvent: Event | null = null;
-			element.addEventListener('select', (event) => (triggeredEvent = event));
+		it('Selects all text and queues a select event.', async () => {
+			let selectCount = 0;
+			element.addEventListener('select', () => selectCount++);
 			element.value = 'TEST_VALUE';
 			element.select();
 			expect(element.selectionStart).toBe(0);
 			expect(element.selectionEnd).toBe(10);
 			expect(element.selectionDirection).toBe('none');
-			expect((<Event>(<unknown>triggeredEvent)).type).toBe('select');
+			expect(selectCount).toBe(0);
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
+			expect(selectCount).toBe(1);
 		});
 	});
 
 	describe('setSelectionRange()', () => {
-		it('Sets selection range.', () => {
-			let triggeredEvent: Event | null = null;
-			element.addEventListener('select', (event) => (triggeredEvent = event));
+		it('Sets selection range and queues a select event.', async () => {
+			let selectCount = 0;
+			element.addEventListener('select', () => selectCount++);
 			element.value = 'TEST_VALUE';
 			element.setSelectionRange(1, 5, 'forward');
 			expect(element.selectionStart).toBe(1);
 			expect(element.selectionEnd).toBe(5);
 			expect(element.selectionDirection).toBe('forward');
-			expect((<Event>(<unknown>triggeredEvent)).type).toBe('select');
+			expect(selectCount).toBe(0);
+			await new Promise((resolve) => window.setTimeout(resolve, 0));
+			expect(selectCount).toBe(1);
 		});
 
 		it('Sets selection end to the value length if out of range.', () => {

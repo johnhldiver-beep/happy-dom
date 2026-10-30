@@ -1,6 +1,29 @@
 import CSSStringUtility from './CSSStringUtility.js';
 
 const COLOR_REGEXP = /^#([0-9a-fA-F]{3,4}){1,2}$|^(rgba?|hsla?)\((.*)\)$/;
+const COLOR_FUNCTION_REGEXP = /^(hwb|lab|lch|oklab|oklch|color|color-mix)\((.*)\)$/;
+
+/**
+ * Returns "true" if the parentheses in the value are balanced.
+ *
+ * @param value Value.
+ * @returns "true" if balanced.
+ */
+function isBalancedParentheses(value: string): boolean {
+	let depth = 0;
+	for (let i = 0; i < value.length; i++) {
+		const character = value[i];
+		if (character === '(') {
+			depth++;
+		} else if (character === ')') {
+			depth--;
+			if (depth < 0) {
+				return false;
+			}
+		}
+	}
+	return depth === 0;
+}
 const LENGTH_REGEXP =
 	/^(0|[-+]?[0-9]*\.?[0-9]+)(in|cm|em|mm|pt|pc|px|ex|rem|vh|vw|ch|vw|vh|vmin|vmax|Q)$/;
 const PERCENTAGE_REGEXP = /^[-+]?[0-9]*\.?[0-9]+%$/;
@@ -356,6 +379,10 @@ export default class CSSValueFormatter {
 				return `${match[2]}(${match[3].replace(/\s+/g, ' ').replace(/,([^ ])/g, ', $1')})`;
 			}
 			return value;
+		}
+		const functionalMatch = value.match(COLOR_FUNCTION_REGEXP);
+		if (functionalMatch && isBalancedParentheses(value)) {
+			return `${functionalMatch[1]}(${functionalMatch[2].replace(/\s+/g, ' ').replace(/,([^ ])/g, ', $1')})`;
 		}
 		return null;
 	}

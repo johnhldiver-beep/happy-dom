@@ -1159,6 +1159,34 @@ describe('CSSStyleDeclaration', () => {
 		});
 	});
 
+	describe('get CSS Color 4/5 function values', () => {
+		it('Keeps CSS Color 4/5 functional notations for colour properties.', () => {
+			const colors = [
+				['element.style.backgroundColor', 'oklch(0.62 0.19 259)'],
+				['element.style.backgroundColor', 'oklab(0.62 0.19 0.1)'],
+				['element.style.backgroundColor', 'lab(0.62 0.19 0.1)'],
+				['element.style.backgroundColor', 'lch(0.62 0.19 259)'],
+				['element.style.color', 'hwb(194 0% 0%)'],
+				['element.style.color', 'color(display-p3 0.5 0.5 0.5)'],
+				['element.style.backgroundColor', 'color-mix(in srgb, red 20%, transparent)']
+			];
+			for (const [property, value] of colors) {
+				if (property === 'element.style.color') {
+					element.style.color = value;
+					expect(element.style.color).toBe(value);
+				} else {
+					element.style.backgroundColor = value;
+					expect(element.style.backgroundColor).toBe(value);
+				}
+			}
+		});
+
+		it('Drops invalid colour values.', () => {
+			element.style.backgroundColor = 'not-a-color';
+			expect(element.style.backgroundColor).toBe('');
+		});
+	});
+
 	describe('get outlineWidth()', () => {
 		it('Returns style property.', () => {
 			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {

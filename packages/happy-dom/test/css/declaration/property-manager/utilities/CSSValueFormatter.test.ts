@@ -29,6 +29,27 @@ describe('CSSValueFormatter', () => {
 				expect(parsedColor).toStrictEqual(namedColor);
 			});
 		}
+
+		it('Parses CSS Color 4/5 functional notations.', () => {
+			const colors = [
+				'oklch(0.62 0.19 259)',
+				'oklab(0.62 0.19 0.1)',
+				'lab(0.62 0.19 0.1)',
+				'lch(0.62 0.19 259)',
+				'hwb(194 0% 0%)',
+				'color(display-p3 0.5 0.5 0.5)',
+				'color-mix(in srgb, red 20%, transparent)',
+				'color-mix(in oklch, oklch(0.7 0.2 200) 40%, red)'
+			];
+			for (const color of colors) {
+				expect(CSSValueFormatter.getColor(color)).toBe(color);
+			}
+		});
+
+		it('Rejects malformed color functions with unbalanced parentheses.', () => {
+			expect(CSSValueFormatter.getColor('oklch(0.62 0.19 259')).toBeNull();
+			expect(CSSValueFormatter.getColor('oklch(0.62 0.19 259))')).toBeNull();
+		});
 	});
 
 	describe('getGradient()', () => {

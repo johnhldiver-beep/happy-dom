@@ -15,9 +15,11 @@ import CSSComputedStyleInheritedProperties from './config/CSSComputedStyleInheri
 import CSSComputedStyleMeasurementProperties from './config/CSSComputedStyleMeasurementProperties.js';
 import CSSTextParser from '../utilities/CSSTextParser.js';
 import QuerySelector from '../../../query-selector/QuerySelector.js';
+import SelectorParser from '../../../query-selector/SelectorParser.js';
 import CSSMeasurementConverter from '../utilities/CSSMeasurementConverter.js';
 import MediaQueryList from '../../../match-media/MediaQueryList.js';
 import WindowBrowserContext from '../../../window/WindowBrowserContext.js';
+import type BrowserWindow from '../../../window/BrowserWindow.js';
 import type CSSSupportsRule from '../../rules/CSSSupportsRule.js';
 import CSSScopeRule from '../../rules/CSSScopeRule.js';
 import type CSSStyleSheet from '../../CSSStyleSheet.js';
@@ -361,7 +363,16 @@ export default class CSSComputedStyle {
 			if (rule.type === CSSRuleTypeEnum.styleRule) {
 				const selectorText: string = (<CSSStyleRule>rule).selectorText;
 				if (selectorText) {
+					const subjectClassFilter = this.getSubjectClassFilter(selectorText, window);
 					for (const element of options.elements) {
+						if (
+							subjectClassFilter &&
+							element.element &&
+							element.element[PropertySymbol.nodeType] === NodeTypeEnum.elementNode &&
+							this.allSubjectClassesMissing(<Element>element.element, subjectClassFilter)
+						) {
+							continue;
+						}
 						const match = QuerySelector.matches(<Element>element.element, selectorText, {
 							ignoreErrors: true,
 							scope: options.scopeElement?.element
@@ -446,6 +457,70 @@ export default class CSSComputedStyle {
 				// TODO: Add support for CSSContainerRule, which would require element sizes to be measured.
 			}
 		}
+	}
+
+	/**
+	 * Builds the list of classes required by the subject compound (the rightmost compound)
+	 * of every selector group of a rule. Returns null when the rule cannot be pre-filtered,
+	 * i.e. when any group's subject compound has no class requirement.
+	 *
+	 * @param selectorText Selector text.
+	 * @param window Window.
+	 * @returns Required classes per group, or null when the rule is not filterable.
+	 */
+	private getSubjectClassFilter(selectorText: string, window: BrowserWindow): string[][] | null {
+		const groups = new SelectorParser({
+			window,
+			scope: window.document,
+			ignoreErrors: true,
+			globalMatchFunction: QuerySelector.globalMatchFunction
+		}).getSelectorGroups(selectorText);
+
+		if (!groups.length) {
+			return null;
+		}
+
+		const subjectClasses: string[][] = [];
+
+		for (const group of groups) {
+			const subject = group[group.length - 1];
+			// Classes inside pseudo-class arguments (:not(.a), :is(.a)) live in pseudos, not
+			// classNames, so they never count as required classes here.
+			if (!subject.classNames) {
+				return null;
+			}
+			subjectClasses.push(subject.classNames);
+		}
+
+		return subjectClasses;
+	}
+
+	/**
+	 * Returns true when the element is missing at least one required class in every selector
+	 * group. In that case the selector cannot possibly match the element, so computed styles
+	 * cannot be affected by the rule.
+	 *
+	 * @param element Element.
+	 * @param subjectClasses Required classes per group.
+	 * @returns True when none of the groups can match the element.
+	 */
+	private allSubjectClassesMissing(element: Element, subjectClasses: string[][]): boolean {
+		for (const classes of subjectClasses) {
+			let hasAllClasses = true;
+
+			for (const className of classes) {
+				if (!element.classList.contains(className)) {
+					hasAllClasses = false;
+					break;
+				}
+			}
+
+			if (hasAllClasses) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**

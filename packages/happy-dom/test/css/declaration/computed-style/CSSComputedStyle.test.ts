@@ -134,4 +134,120 @@ describe('CSSComputedStyle', () => {
 			expect(propertyManager.get('width')).toBe(null);
 		});
 	});
+
+	describe('Selector matching class pre-filter', () => {
+		it('Applies a rule only to elements that have the required subject class.', () => {
+			document.head.appendChild(
+				Object.assign(document.createElement('style'), {
+					textContent: '.highlight { background-color: rgb(255, 0, 0); }'
+				})
+			);
+
+			const matched = document.createElement('div');
+			matched.className = 'highlight';
+			const unmatched = document.createElement('div');
+			document.body.appendChild(matched);
+			document.body.appendChild(unmatched);
+
+			const matchedColor = new CSSComputedStyle(matched)
+				.getComputedStyle()
+				.get('background-color')?.value;
+			const unmatchedColor = new CSSComputedStyle(unmatched)
+				.getComputedStyle()
+				.get('background-color')?.value;
+
+			expect(matchedColor).toBe('rgb(255, 0, 0)');
+			expect(unmatchedColor).not.toBe(matchedColor);
+		});
+
+		it('Does not apply a rule when every selector group requires a class the element lacks.', () => {
+			document.head.appendChild(
+				Object.assign(document.createElement('style'), {
+					textContent: '.a, .b { background-color: rgb(0, 0, 255); }'
+				})
+			);
+
+			const elementNoClass = document.createElement('span');
+			const elementWithClass = document.createElement('span');
+			elementWithClass.className = 'b';
+			document.body.appendChild(elementNoClass);
+			document.body.appendChild(elementWithClass);
+
+			const noClassColor = new CSSComputedStyle(elementNoClass)
+				.getComputedStyle()
+				.get('background-color')?.value;
+			const withClassColor = new CSSComputedStyle(elementWithClass)
+				.getComputedStyle()
+				.get('background-color')?.value;
+
+			expect(withClassColor).toBe('rgb(0, 0, 255)');
+			expect(noClassColor).not.toBe(withClassColor);
+		});
+
+		it('Lets matches() evaluate ancestors when the subject class is present.', () => {
+			document.head.appendChild(
+				Object.assign(document.createElement('style'), {
+					textContent: '.container .item { color: rgb(1, 2, 3); }'
+				})
+			);
+
+			const inside = document.createElement('div');
+			inside.className = 'item';
+			const container = document.createElement('div');
+			container.className = 'container';
+			container.appendChild(inside);
+			document.body.appendChild(container);
+
+			const outside = document.createElement('div');
+			outside.className = 'item';
+			document.body.appendChild(outside);
+
+			const insideColor = new CSSComputedStyle(inside).getComputedStyle().get('color')?.value;
+			const outsideColor = new CSSComputedStyle(outside).getComputedStyle().get('color')?.value;
+
+			expect(insideColor).toBe('rgb(1, 2, 3)');
+			expect(outsideColor).not.toBe(insideColor);
+		});
+
+		it('Applies rules whose subject compound has no class requirement.', () => {
+			document.head.appendChild(
+				Object.assign(document.createElement('style'), {
+					textContent: 'div { border-bottom-width: 3px; }'
+				})
+			);
+
+			const child = document.createElement('div');
+			document.body.appendChild(child);
+
+			const borderBottomWidth = new CSSComputedStyle(child)
+				.getComputedStyle()
+				.get('border-bottom-width')?.value;
+
+			expect(borderBottomWidth).toBe('3px');
+		});
+
+		it('Handles pseudo-class arguments like :not() without false positives.', () => {
+			document.head.appendChild(
+				Object.assign(document.createElement('style'), {
+					textContent: 'div:not(.excluded) { margin-left: 7px; }'
+				})
+			);
+
+			const included = document.createElement('div');
+			const excluded = document.createElement('div');
+			excluded.className = 'excluded';
+			document.body.appendChild(included);
+			document.body.appendChild(excluded);
+
+			const includedMargin = new CSSComputedStyle(included)
+				.getComputedStyle()
+				.get('margin-left')?.value;
+			const excludedMargin = new CSSComputedStyle(excluded)
+				.getComputedStyle()
+				.get('margin-left')?.value;
+
+			expect(includedMargin).toBe('7px');
+			expect(excludedMargin).not.toBe('7px');
+		});
+	});
 });

@@ -8,6 +8,7 @@ export default interface IKeyboardEventInit extends IUIEventInit {
 	shiftKey?: boolean;
 	altKey?: boolean;
 	metaKey?: boolean;
+	modifierAltGraph?: boolean;
 	repeat?: boolean;
 	isComposing?: boolean;
 

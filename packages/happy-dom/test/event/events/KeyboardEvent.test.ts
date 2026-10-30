@@ -29,7 +29,13 @@ describe('KeyboardEvent', () => {
 		it('Returns true when Alt key is pressed', () => {
 			const event = new KeyboardEvent('keydown', { altKey: true });
 			expect(event.getModifierState('Alt')).toBe(true);
+			expect(event.getModifierState('AltGraph')).toBe(false);
+		});
+
+		it('Returns true when AltGraph modifier is active (issue #2495)', () => {
+			const event = new KeyboardEvent('keydown', { modifierAltGraph: true });
 			expect(event.getModifierState('AltGraph')).toBe(true);
+			expect(event.getModifierState('Alt')).toBe(false);
 		});
 
 		it('Returns true when Control key is pressed', () => {
@@ -50,22 +56,26 @@ describe('KeyboardEvent', () => {
 		it('Returns false when modifier keys are not pressed', () => {
 			const event = new KeyboardEvent('keydown', {});
 			expect(event.getModifierState('Alt')).toBe(false);
+			expect(event.getModifierState('AltGraph')).toBe(false);
 			expect(event.getModifierState('Control')).toBe(false);
 			expect(event.getModifierState('Meta')).toBe(false);
 			expect(event.getModifierState('Shift')).toBe(false);
 		});
 
-		it('Is case-insensitive for modifier key names', () => {
+		it('Matches modifier key names case-sensitively (issue #2495)', () => {
 			const event = new KeyboardEvent('keydown', {
 				altKey: true,
 				ctrlKey: true,
 				metaKey: true,
 				shiftKey: true
 			});
-			expect(event.getModifierState('alt')).toBe(true);
-			expect(event.getModifierState('CONTROL')).toBe(true);
+			expect(event.getModifierState('Alt')).toBe(true);
+			expect(event.getModifierState('Control')).toBe(true);
 			expect(event.getModifierState('Meta')).toBe(true);
-			expect(event.getModifierState('ShIfT')).toBe(true);
+			expect(event.getModifierState('Shift')).toBe(true);
+			expect(event.getModifierState('alt')).toBe(false);
+			expect(event.getModifierState('CONTROL')).toBe(false);
+			expect(event.getModifierState('ShIfT')).toBe(false);
 		});
 
 		it('Returns false for invalid modifier keys', () => {

@@ -18,6 +18,7 @@ export default class KeyboardEvent extends UIEvent {
 	public readonly metaKey: boolean;
 	public readonly repeat: boolean;
 	public readonly shiftKey: boolean;
+	private readonly altGraphKey: boolean;
 
 	/**
 	 * @deprecated
@@ -47,6 +48,7 @@ export default class KeyboardEvent extends UIEvent {
 		this.metaKey = eventInit?.metaKey ?? false;
 		this.repeat = eventInit?.repeat ?? false;
 		this.shiftKey = eventInit?.shiftKey ?? false;
+		this.altGraphKey = eventInit?.modifierAltGraph ?? false;
 		this.keyCode = eventInit?.keyCode ?? 0;
 		this.which = eventInit?.which ?? eventInit?.keyCode ?? 0;
 	}
@@ -63,15 +65,16 @@ export default class KeyboardEvent extends UIEvent {
 				"Failed to execute 'getModifierState' on 'KeyboardEvent': 1 argument required, but only 0 present."
 			);
 		}
-		switch (String(key).toLowerCase()) {
-			case 'alt':
-			case 'altgraph':
+		switch (key) {
+			case 'Alt':
 				return this.altKey;
-			case 'control':
+			case 'AltGraph':
+				return this.altGraphKey;
+			case 'Control':
 				return this.ctrlKey;
-			case 'meta':
+			case 'Meta':
 				return this.metaKey;
-			case 'shift':
+			case 'Shift':
 				return this.shiftKey;
 			default:
 				return false;

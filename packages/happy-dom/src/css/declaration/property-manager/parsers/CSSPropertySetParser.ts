@@ -416,6 +416,10 @@ export default class CSSPropertySetParser {
 			return { outline: { value: variable, important } };
 		}
 
+		if (CSSVariableFormatter.containsVariable(value)) {
+			return { outline: { value, important } };
+		}
+
 		const globalValue = CSSValueFormatter.getGlobal(value);
 
 		if (globalValue) {
@@ -543,6 +547,10 @@ export default class CSSPropertySetParser {
 		const variable = CSSVariableFormatter.getVariable(value);
 		if (variable) {
 			return { border: { value: variable, important } };
+		}
+
+		if (CSSVariableFormatter.containsVariable(value)) {
+			return { border: { value, important } };
 		}
 
 		const globalValue = CSSValueFormatter.getGlobal(value);
@@ -1455,6 +1463,10 @@ export default class CSSPropertySetParser {
 			return { 'border-top': { value: variable, important } };
 		}
 
+		if (CSSVariableFormatter.containsVariable(value)) {
+			return { 'border-top': { value, important } };
+		}
+
 		const globalValue = CSSValueFormatter.getGlobal(value);
 
 		if (globalValue) {
@@ -1502,6 +1514,10 @@ export default class CSSPropertySetParser {
 		const variable = CSSVariableFormatter.getVariable(value);
 		if (variable) {
 			return { 'border-right': { value: variable, important } };
+		}
+
+		if (CSSVariableFormatter.containsVariable(value)) {
+			return { 'border-right': { value, important } };
 		}
 
 		const globalValue = CSSValueFormatter.getGlobal(value);
@@ -1553,6 +1569,10 @@ export default class CSSPropertySetParser {
 			return { 'border-bottom': { value: variable, important } };
 		}
 
+		if (CSSVariableFormatter.containsVariable(value)) {
+			return { 'border-bottom': { value, important } };
+		}
+
 		const globalValue = CSSValueFormatter.getGlobal(value);
 
 		if (globalValue) {
@@ -1600,6 +1620,10 @@ export default class CSSPropertySetParser {
 		const variable = CSSVariableFormatter.getVariable(value);
 		if (variable) {
 			return { 'border-left': { value: variable, important } };
+		}
+
+		if (CSSVariableFormatter.containsVariable(value)) {
+			return { 'border-left': { value, important } };
 		}
 
 		const globalValue = CSSValueFormatter.getGlobal(value);
@@ -1904,6 +1928,10 @@ export default class CSSPropertySetParser {
 			return { flex: { value: variable, important } };
 		}
 
+		if (CSSVariableFormatter.containsVariable(value)) {
+			return { flex: { value, important } };
+		}
+
 		const lowerValue = value.trim().toLowerCase();
 		const globalValue = CSSValueFormatter.getGlobal(value);
 
@@ -2026,6 +2054,10 @@ export default class CSSPropertySetParser {
 		const variable = CSSVariableFormatter.getVariable(value);
 		if (variable) {
 			return { background: { value: variable, important } };
+		}
+
+		if (CSSVariableFormatter.containsVariable(value)) {
+			return { background: { value, important } };
 		}
 
 		const globalValue = CSSValueFormatter.getGlobal(value);
@@ -2578,6 +2610,10 @@ export default class CSSPropertySetParser {
 		const variable = CSSVariableFormatter.getVariable(value);
 		if (variable) {
 			return { font: { value: variable, important } };
+		}
+
+		if (CSSVariableFormatter.containsVariable(value)) {
+			return { font: { value, important } };
 		}
 
 		const lowerValue = value.toLowerCase();

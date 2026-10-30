@@ -1,6 +1,7 @@
 const GET_SIMPLE_VARIABLE_REGEXP = /^var\(\s*(--[a-zA-Z0-9-_]+)\s*\)$/;
 const GET_FALLBACK_VARIABLE_REGEXP = /^var\(\s*(--[a-zA-Z0-9-_]+),\s*(.+)\)$/;
 const RESOLVE_REGEXP = /var\(\s*(--[a-zA-Z0-9-_]+),?|(\()|(\))/;
+const CONTAINS_VARIABLE_REGEXP = /var\(/;
 
 /**
  * CSS variable formatter.
@@ -27,6 +28,16 @@ export default class CSSVariableFormatter {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns true if the value contains a CSS variable reference.
+	 *
+	 * @param value Value to check.
+	 * @returns True if the value contains a variable reference.
+	 */
+	public static containsVariable(value: string): boolean {
+		return CONTAINS_VARIABLE_REGEXP.test(value);
 	}
 
 	/**

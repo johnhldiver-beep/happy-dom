@@ -3287,4 +3287,66 @@ describe('CSSStyleDeclaration', () => {
 			expect(declaration.getPropertyPriority('text-transform')).toBe('important');
 		});
 	});
+
+	describe('Shorthand values containing var()', () => {
+		it('Keeps shorthands whole instead of decomposing them into corrupted longhands.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			const shorthandValues = [
+				'border: 1px solid var(--b)',
+				'outline: 1px solid var(--b)',
+				'border-top: 1px solid var(--b)',
+				'border-right: 1px solid var(--b)',
+				'border-bottom: 1px solid var(--b)',
+				'border-left: 1px solid var(--b)',
+				'font: 12px var(--f)',
+				'flex: 1 1 var(--w)',
+				'background: no-repeat var(--b)'
+			];
+
+			for (const css of shorthandValues) {
+				const div = document.createElement('div');
+				document.body.appendChild(div);
+				div.setAttribute('style', css);
+				expect(div.style.cssText).toBe(`${css};`);
+			}
+		});
+
+		it('Keeps shorthand whole when assigned through the style property.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.style.border = '1px solid var(--b)';
+
+			expect(element.getAttribute('style')).toBe('border: 1px solid var(--b);');
+
+			expect(declaration.border).toBe('1px solid var(--b)');
+			expect(declaration.borderWidth).toBe('');
+			expect(declaration.borderStyle).toBe('');
+			expect(declaration.borderColor).toBe('');
+		});
+
+		it('Does not decompose values that mix var() with literal sub-values.', () => {
+			const declaration = new CSSStyleDeclaration(PropertySymbol.illegalConstructor, window, {
+				element
+			});
+
+			element.setAttribute('style', 'border: 1px solid var(--b)');
+
+			expect(declaration.length).toBe(1);
+			expect(declaration.border).toBe('1px solid var(--b)');
+			expect(declaration.borderWidth).toBe('');
+			expect(declaration.borderStyle).toBe('');
+			expect(declaration.borderColor).toBe('');
+
+			element.setAttribute('style', 'font: 12px var(--f)');
+
+			expect(declaration.font).toBe('12px var(--f)');
+			expect(declaration.fontFamily).toBe('');
+			expect(declaration.fontSize).toBe('');
+		});
+	});
 });

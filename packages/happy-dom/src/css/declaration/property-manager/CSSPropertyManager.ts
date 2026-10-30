@@ -11,7 +11,8 @@ const TO_STRING_SHORTHAND_PROPERTIES = [
 	['border', ['border-width', 'border-style', 'border-color', 'border-image']],
 	['border-radius'],
 	['background', 'background-position'],
-	['font']
+	['font'],
+	['overflow']
 ];
 
 /**
@@ -83,6 +84,8 @@ export default class CSSPropertyManager {
 				return CSSPropertyGetParser.getFlex(this.properties);
 			case 'font':
 				return CSSPropertyGetParser.getFont(this.properties);
+			case 'overflow':
+				return CSSPropertyGetParser.getOverflow(this.properties);
 		}
 
 		return this.properties[name] || null;
@@ -233,6 +236,10 @@ export default class CSSPropertyManager {
 				delete this.properties['margin-right'];
 				delete this.properties['margin-bottom'];
 				delete this.properties['margin-left'];
+				break;
+			case 'overflow':
+				delete this.properties['overflow-x'];
+				delete this.properties['overflow-y'];
 				break;
 		}
 	}
@@ -502,6 +509,9 @@ export default class CSSPropertyManager {
 				break;
 			case 'visibility':
 				properties = CSSPropertySetParser.getVisibility(value, important);
+				break;
+			case 'overflow':
+				properties = CSSPropertySetParser.getOverflow(value, important);
 				break;
 			case 'aspect-ratio':
 				properties = CSSPropertySetParser.getAspectRatio(value, important);

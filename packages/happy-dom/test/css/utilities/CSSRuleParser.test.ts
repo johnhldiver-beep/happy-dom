@@ -31,10 +31,11 @@ describe('CSSRuleParser', () => {
 				':host { display: flex; overflow: hidden; width: 100%; }'
 			);
 			expect((<CSSStyleRule>cssRules[0]).style.parentRule).toBe(cssRules[0]);
-			expect((<CSSStyleRule>cssRules[0]).style.length).toBe(3);
+			expect((<CSSStyleRule>cssRules[0]).style.length).toBe(4);
 			expect((<CSSStyleRule>cssRules[0]).style[0]).toBe('display');
-			expect((<CSSStyleRule>cssRules[0]).style[1]).toBe('overflow');
-			expect((<CSSStyleRule>cssRules[0]).style[2]).toBe('width');
+			expect((<CSSStyleRule>cssRules[0]).style[1]).toBe('overflow-x');
+			expect((<CSSStyleRule>cssRules[0]).style[2]).toBe('overflow-y');
+			expect((<CSSStyleRule>cssRules[0]).style[3]).toBe('width');
 			expect((<CSSStyleRule>cssRules[0]).style.display).toBe('flex');
 			expect((<CSSStyleRule>cssRules[0]).style.overflow).toBe('hidden');
 			expect((<CSSStyleRule>cssRules[0]).style.width).toBe('100%');
@@ -49,14 +50,15 @@ describe('CSSRuleParser', () => {
 			expect((<CSSStyleRule>cssRules[1]).cssText).toBe(
 				'.container { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; --css-variable: 1px; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="), url("test.jpg"); }'
 			);
-			expect((<CSSStyleRule>cssRules[1]).style.length).toBe(6);
+			expect((<CSSStyleRule>cssRules[1]).style.length).toBe(7);
 			expect((<CSSStyleRule>cssRules[1]).style.parentRule).toBe(cssRules[1]);
 			expect((<CSSStyleRule>cssRules[1]).style[0]).toBe('flex-grow');
 			expect((<CSSStyleRule>cssRules[1]).style[1]).toBe('display');
 			expect((<CSSStyleRule>cssRules[1]).style[2]).toBe('flex-direction');
-			expect((<CSSStyleRule>cssRules[1]).style[3]).toBe('overflow');
-			expect((<CSSStyleRule>cssRules[1]).style[4]).toBe('--css-variable');
-			expect((<CSSStyleRule>cssRules[1]).style[5]).toBe('background-image');
+			expect((<CSSStyleRule>cssRules[1]).style[3]).toBe('overflow-x');
+			expect((<CSSStyleRule>cssRules[1]).style[4]).toBe('overflow-y');
+			expect((<CSSStyleRule>cssRules[1]).style[5]).toBe('--css-variable');
+			expect((<CSSStyleRule>cssRules[1]).style[6]).toBe('background-image');
 			expect((<CSSStyleRule>cssRules[1]).style.flexGrow).toBe('1');
 			expect((<CSSStyleRule>cssRules[1]).style.display).toBe('flex');
 			expect((<CSSStyleRule>cssRules[1]).style.flexDirection).toBe('column');

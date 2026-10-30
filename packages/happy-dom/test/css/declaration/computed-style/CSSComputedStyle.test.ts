@@ -134,4 +134,55 @@ describe('CSSComputedStyle', () => {
 			expect(propertyManager.get('width')).toBe(null);
 		});
 	});
+
+	describe('Overflow shorthand and cross-axis computed values', () => {
+		const getOverflow = (cssText: string): [string, string] => {
+			document.body.appendChild(element);
+			element.setAttribute('style', cssText);
+
+			const computedStyle = new CSSComputedStyle(element);
+			const propertyManager = computedStyle.getComputedStyle();
+
+			return [
+				propertyManager.get('overflow-x')?.value || '',
+				propertyManager.get('overflow-y')?.value || ''
+			];
+		};
+
+		it('Expands the overflow shorthand to both axis longhands.', () => {
+			expect(getOverflow('overflow: auto')).toEqual(['auto', 'auto']);
+			expect(getOverflow('overflow: hidden auto')).toEqual(['hidden', 'auto']);
+			expect(getOverflow('overflow: visible')).toEqual(['visible', 'visible']);
+			expect(getOverflow('overflow: clip')).toEqual(['clip', 'clip']);
+		});
+
+		it('Computes visible as auto on the other axis when one axis is neither visible nor clip.', () => {
+			expect(getOverflow('overflow-x: hidden')).toEqual(['hidden', 'auto']);
+			expect(getOverflow('overflow-y: scroll')).toEqual(['auto', 'scroll']);
+			expect(getOverflow('overflow-x: visible; overflow-y: hidden')).toEqual(['auto', 'hidden']);
+			expect(getOverflow('overflow-x: visible; overflow-y: auto')).toEqual(['auto', 'auto']);
+			expect(getOverflow('overflow-x: auto; overflow-y: visible')).toEqual(['auto', 'auto']);
+			expect(getOverflow('overflow-x: scroll; overflow-y: visible')).toEqual(['scroll', 'auto']);
+		});
+
+		it('Computes clip as hidden on the other axis when one axis is neither visible nor clip.', () => {
+			expect(getOverflow('overflow-x: clip; overflow-y: scroll')).toEqual(['hidden', 'scroll']);
+			expect(getOverflow('overflow-x: scroll; overflow-y: clip')).toEqual(['scroll', 'hidden']);
+		});
+
+		it('Does not convert a visible or clip axis when both axes are visible or clip.', () => {
+			expect(getOverflow('overflow-x: visible; overflow-y: clip')).toEqual(['visible', 'clip']);
+			expect(getOverflow('overflow-x: clip; overflow-y: visible')).toEqual(['clip', 'visible']);
+		});
+
+		it('Applies the cross-axis rules through Window.getComputedStyle().', () => {
+			document.body.appendChild(element);
+			element.style.cssText = 'overflow: clip scroll';
+
+			const style = window.getComputedStyle(element);
+
+			expect(style.overflowX).toBe('hidden');
+			expect(style.overflowY).toBe('scroll');
+		});
+	});
 });

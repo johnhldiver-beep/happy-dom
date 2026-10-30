@@ -96,6 +96,7 @@ const TEXT_TRANSFORM = [
 	'full-size-kana'
 ];
 const VISIBILITY = ['visible', 'hidden', 'collapse'];
+const OVERFLOW = ['visible', 'hidden', 'clip', 'scroll', 'auto'];
 
 /**
  * Computed style property parser.
@@ -2898,6 +2899,47 @@ export default class CSSPropertySetParser {
 			};
 		}
 		return null;
+	}
+
+	/**
+	 * Returns overflow.
+	 *
+	 * @param value Value.
+	 * @param important Important.
+	 * @returns Property map.
+	 */
+	public static getOverflow(value: string, important: boolean): ICSSPropertyMap | null {
+		const variable = CSSVariableFormatter.getVariable(value);
+		if (variable) {
+			return { overflow: { value: variable, important } };
+		}
+
+		const globalValue = CSSValueFormatter.getGlobal(value);
+
+		if (globalValue) {
+			return {
+				'overflow-x': { value: globalValue, important },
+				'overflow-y': { value: globalValue, important }
+			};
+		}
+
+		const parts = value.split(SPLIT_SPACE_SEPARATED_WITH_PARANTHESES_REGEXP);
+
+		if (!parts.length || parts.length > 2) {
+			return null;
+		}
+
+		const x = parts[0].toLowerCase();
+		const y = (parts[1] || parts[0]).toLowerCase();
+
+		if (!OVERFLOW.includes(x) || !OVERFLOW.includes(y)) {
+			return null;
+		}
+
+		return {
+			'overflow-x': { value: x, important },
+			'overflow-y': { value: y, important }
+		};
 	}
 
 	/**

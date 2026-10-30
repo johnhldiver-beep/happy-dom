@@ -20,6 +20,28 @@ export default class CSSPropertyGetParser {
 	}
 
 	/**
+	 * Returns overflow.
+	 *
+	 * @param properties Properties.
+	 * @returns Property value
+	 */
+	public static getOverflow(properties: ICSSPropertyMap): ICSSPropertyValue | null {
+		const x = properties['overflow-x']?.value;
+		const y = properties['overflow-y']?.value;
+
+		if (!x || !y) {
+			return null;
+		}
+
+		const important = properties['overflow-x'].important && properties['overflow-y'].important;
+
+		return {
+			important,
+			value: x === y ? x : `${x} ${y}`
+		};
+	}
+
+	/**
 	 * Returns padding.
 	 *
 	 * @param properties Properties.

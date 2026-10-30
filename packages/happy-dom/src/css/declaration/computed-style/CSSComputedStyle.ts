@@ -75,7 +75,7 @@ export default class CSSComputedStyle {
 		const cacheResult = this.getCachedPropertyManager(this.element);
 
 		if (cacheResult) {
-			return cacheResult;
+			return this.applyOverflowComputedValues(cacheResult);
 		}
 
 		const settings = new WindowBrowserContext(this.element[PropertySymbol.window]).getSettings();
@@ -179,7 +179,7 @@ export default class CSSComputedStyle {
 			const parentElement = parentElements[i];
 			if (parentElement.propertyManager) {
 				if (parentElement.element === this.element) {
-					return parentElement.propertyManager;
+					return this.applyOverflowComputedValues(parentElement.propertyManager);
 				}
 				for (const name of Object.keys(parentElement.propertyManager.properties)) {
 					if ((<any>CSSComputedStyleInheritedProperties)[name]) {
@@ -295,14 +295,14 @@ export default class CSSComputedStyle {
 				}
 
 				if (parentElement.element === this.element) {
-					return propertyManager;
+					return this.applyOverflowComputedValues(propertyManager);
 				}
 			}
 
 			propertyManager = inheritedPropertyManager.clone();
 		}
 
-		return propertyManager;
+		return this.applyOverflowComputedValues(propertyManager);
 	}
 
 	/**
@@ -498,5 +498,48 @@ export default class CSSComputedStyle {
 			return null;
 		}
 		return node[PropertySymbol.cache].computedStyle?.result?.deref() || null;
+	}
+
+	/**
+	 * Applies the cross-axis computed value rules for overflow-x/overflow-y.
+	 *
+	 * Per CSS Overflow Module Level 3, when one axis's computed value is neither
+	 * 'visible' nor 'clip', the other axis resolves 'visible' to 'auto' or 'clip'
+	 * to 'hidden'. The rule is symmetric and simultaneous.
+	 *
+	 * @param propertyManager Property manager.
+	 * @returns The property manager.
+	 */
+	private applyOverflowComputedValues(propertyManager: CSSPropertyManager): CSSPropertyManager {
+		const getAxis = (name: string): string =>
+			propertyManager.get(name)?.value?.toLowerCase() ?? 'visible';
+
+		let x = getAxis('overflow-x');
+		let y = getAxis('overflow-y');
+
+		if (x !== 'visible' && x !== 'clip') {
+			if (y === 'visible') {
+				y = 'auto';
+			} else if (y === 'clip') {
+				y = 'hidden';
+			}
+		}
+
+		if (y !== 'visible' && y !== 'clip') {
+			if (x === 'visible') {
+				x = 'auto';
+			} else if (x === 'clip') {
+				x = 'hidden';
+			}
+		}
+
+		if (x !== getAxis('overflow-x')) {
+			propertyManager.set('overflow-x', x, propertyManager.get('overflow-x')?.important ?? false);
+		}
+		if (y !== getAxis('overflow-y')) {
+			propertyManager.set('overflow-y', y, propertyManager.get('overflow-y')?.important ?? false);
+		}
+
+		return propertyManager;
 	}
 }

@@ -83,6 +83,82 @@ describe('NodeUtility', () => {
 
 			expect(NodeUtility.isFollowing(nodeA, nodeB)).toBe(true);
 		});
+
+		it('Returns "false" if nodeA is an inclusive ancestor of nodeB.', () => {
+			const nodeA = document.createElement('div');
+			const nodeB = document.createElement('div');
+
+			nodeA.appendChild(nodeB);
+
+			expect(NodeUtility.isFollowing(nodeA, nodeB)).toBe(false);
+		});
+
+		it('Returns "true" if nodeB is an inclusive ancestor of nodeA.', () => {
+			const nodeA = document.createElement('div');
+			const nodeB = document.createElement('div');
+
+			nodeB.appendChild(nodeA);
+
+			expect(NodeUtility.isFollowing(nodeA, nodeB)).toBe(true);
+		});
+
+		it('Returns "false" if nodeA and nodeB are in different detached trees.', () => {
+			const nodeA = document.createElement('div');
+			const nodeB = document.createElement('div');
+
+			document.body.appendChild(nodeA);
+
+			expect(NodeUtility.isFollowing(nodeA, nodeB)).toBe(false);
+			expect(NodeUtility.isFollowing(nodeB, nodeA)).toBe(false);
+		});
+
+		it('Follows nodes in the same detached tree when one is after the other.', () => {
+			const container = document.createElement('div');
+			const parentA = document.createElement('div');
+			const parentB = document.createElement('div');
+			const nodeA = document.createElement('div');
+			const nodeB = document.createElement('div');
+
+			parentA.appendChild(nodeA);
+			parentB.appendChild(nodeB);
+
+			container.appendChild(parentA);
+			container.appendChild(parentB);
+
+			expect(NodeUtility.isFollowing(nodeB, nodeA)).toBe(true);
+			expect(NodeUtility.isFollowing(nodeA, nodeB)).toBe(false);
+		});
+
+		it('Follows text and comment nodes in tree order.', () => {
+			const parent = document.createElement('div');
+
+			parent.innerHTML = 'one<!--comment-->two';
+
+			document.body.appendChild(parent);
+
+			const [textOne, comment, textTwo] = parent.childNodes;
+
+			expect(NodeUtility.isFollowing(comment, textOne)).toBe(true);
+			expect(NodeUtility.isFollowing(textTwo, comment)).toBe(true);
+			expect(NodeUtility.isFollowing(textOne, comment)).toBe(false);
+			expect(NodeUtility.isFollowing(comment, textTwo)).toBe(false);
+		});
+
+		it('Returns "false" if nodeA and nodeB are in a shadow root and the document respectively.', () => {
+			const host = document.createElement('div');
+
+			document.body.appendChild(host);
+
+			const shadowRoot = host.attachShadow({ mode: 'open' });
+			const nodeA = document.createElement('div');
+			const nodeB = document.createElement('div');
+
+			shadowRoot.appendChild(nodeA);
+			document.body.appendChild(nodeB);
+
+			expect(NodeUtility.isFollowing(nodeA, nodeB)).toBe(false);
+			expect(NodeUtility.isFollowing(nodeB, nodeA)).toBe(false);
+		});
 	});
 
 	describe('getNodeLength()', () => {

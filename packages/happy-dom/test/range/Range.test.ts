@@ -226,6 +226,32 @@ describe('Range', () => {
 
 			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(1);
 		});
+
+		it('Returns -1 when pointA is before pointB in a large document.', () => {
+			const table = document.createElement('table');
+			const row = document.createElement('tr');
+
+			for (let i = 0; i < 2000; i++) {
+				const cell = document.createElement('td');
+
+				cell.innerHTML = '<span>content</span>';
+				row.appendChild(cell);
+			}
+
+			table.appendChild(row);
+			document.body.appendChild(table);
+
+			const firstCellSpan = row.children[0].querySelector('span');
+			const lastCellSpan = row.children[1999].querySelector('span');
+			const sourceRange = document.createRange();
+
+			range.setStart(firstCellSpan!.firstChild!, 0);
+			range.setEnd(firstCellSpan!.firstChild!, 7);
+			sourceRange.setStart(lastCellSpan!.firstChild!, 0);
+			sourceRange.setEnd(lastCellSpan!.firstChild!, 7);
+
+			expect(range.compareBoundaryPoints(Range.START_TO_END, sourceRange)).toBe(-1);
+		});
 	});
 
 	describe('comparePoint()', () => {

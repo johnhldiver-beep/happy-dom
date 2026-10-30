@@ -104,17 +104,60 @@ export default class NodeUtility {
 			return false;
 		}
 
-		let current: Node | null = nodeB;
+		const ancestorsA: Node[] = [];
+		const ancestorsB: Node[] = [];
 
-		while (current) {
-			current = this.following(current);
+		let currentA: Node | null = nodeA;
 
-			if (current === nodeA) {
-				return true;
-			}
+		while (currentA) {
+			ancestorsA.push(currentA);
+			currentA = currentA[PropertySymbol.parentNode];
 		}
 
-		return false;
+		let currentB: Node | null = nodeB;
+
+		while (currentB) {
+			ancestorsB.push(currentB);
+			currentB = currentB[PropertySymbol.parentNode];
+		}
+
+		ancestorsA.reverse();
+		ancestorsB.reverse();
+
+		// Nodes in different trees are never following each other (the ancestor chains
+		// of a shadow root or a detached subtree end at their own root).
+		if (ancestorsA[0] !== ancestorsB[0]) {
+			return false;
+		}
+
+		const commonPrefixLength = Math.min(ancestorsA.length, ancestorsB.length);
+		let index = 1;
+
+		while (index < commonPrefixLength && ancestorsA[index] === ancestorsB[index]) {
+			index++;
+		}
+
+		// nodeA is an inclusive ancestor of nodeB, so it does not follow nodeB.
+		if (index === ancestorsA.length) {
+			return false;
+		}
+
+		// nodeB is an inclusive ancestor of nodeA, so nodeA follows nodeB.
+		if (index === ancestorsB.length) {
+			return true;
+		}
+
+		// The nodes diverge at "index"; compare the order of the two diverging
+		// children within their shared parent to determine which one comes first.
+		const siblingA = ancestorsA[index];
+		const siblingB = ancestorsB[index];
+		const parent = ancestorsA[index - 1];
+		const nodeArray = (<Node>parent)[PropertySymbol.nodeArray];
+
+		const indexA = nodeArray.indexOf((<Node>siblingA)[PropertySymbol.proxy] || siblingA);
+		const indexB = nodeArray.indexOf((<Node>siblingB)[PropertySymbol.proxy] || siblingB);
+
+		return indexA > indexB;
 	}
 
 	/**

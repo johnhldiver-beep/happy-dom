@@ -1,8 +1,7 @@
 import { Buffer } from 'buffer';
 import { webcrypto } from 'crypto';
 import { TextEncoder, TextDecoder } from 'util';
-import Stream from 'stream';
-import { ReadableStream } from 'stream/web';
+import { ReadableStream, TransformStream, WritableStream } from 'stream/web';
 import { URLSearchParams } from 'url';
 import VM from 'vm';
 import * as PropertySymbol from '../PropertySymbol.js';
@@ -753,9 +752,9 @@ export default class BrowserWindow extends EventTarget implements INodeJSGlobal 
 
 	// Node.js Classes
 	public readonly URLSearchParams = URLSearchParams;
-	public readonly WritableStream = Stream.Writable;
+	public readonly WritableStream = WritableStream;
 	public readonly ReadableStream = ReadableStream;
-	public readonly TransformStream = Stream.Transform;
+	public readonly TransformStream = TransformStream;
 	public readonly PerformanceObserver = PerformanceObserver;
 	public readonly PerformanceEntry = PerformanceEntry;
 	public readonly PerformanceObserverEntryList = <new () => IPerformanceObserverEntryList>(

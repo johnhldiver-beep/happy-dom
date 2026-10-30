@@ -38,8 +38,7 @@ import type EventTarget from '../../src/event/EventTarget.js';
 import EventPhaseEnum from '../../src/event/EventPhaseEnum.js';
 import { PerformanceEntry, PerformanceObserver } from 'perf_hooks';
 import { URLSearchParams } from 'url';
-import Stream from 'stream';
-import { ReadableStream } from 'stream/web';
+import { ReadableStream, TransformStream, WritableStream } from 'stream/web';
 import SVGElementConfig from '../../src/config/SVGElementConfig.js';
 
 const PLATFORM =
@@ -613,7 +612,7 @@ describe('BrowserWindow', () => {
 
 	describe('get WritableStream()', () => {
 		it('Returns the WritableStream class.', () => {
-			expect(window.WritableStream).toBe(Stream.Writable);
+			expect(window.WritableStream).toBe(WritableStream);
 		});
 	});
 
@@ -625,7 +624,7 @@ describe('BrowserWindow', () => {
 
 	describe('get TransformStream()', () => {
 		it('Returns the TransformStream class.', () => {
-			expect(window.TransformStream).toBe(Stream.Transform);
+			expect(window.TransformStream).toBe(TransformStream);
 		});
 	});
 

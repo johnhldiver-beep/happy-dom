@@ -6,6 +6,7 @@ import type ProgressEvent from '../../src/event/events/ProgressEvent.js';
 import Blob from '../../src/file/Blob.js';
 import type Document from '../../src/nodes/document/Document.js';
 import type { IncomingMessage } from 'http';
+import HTTP from 'http';
 import Stream from 'stream';
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
 import SyncFetch from '../../src/fetch/SyncFetch.js';
@@ -1183,7 +1184,8 @@ describe('XMLHttpRequest', () => {
 						'Accept-Encoding': 'gzip, deflate, br',
 						Origin: WINDOW_ORIGIN,
 						Referer: WINDOW_URL + '/',
-						'X-Custom-Header': 'yes'
+						'X-Custom-Header': 'yes',
+						'Content-Length': String(Buffer.byteLength(body))
 					});
 					expect(request.responseText).toBe(responseText);
 					expect(request.readyState).toBe(XMLHttpRequestReadyStateEnum.done);
@@ -1502,6 +1504,72 @@ describe('XMLHttpRequest', () => {
 					DOMExceptionNameEnum.invalidStateError
 				)
 			);
+		});
+	});
+
+	describe('Sends a request body for non-POST/PUT methods', () => {
+		it('Sends a DELETE request body with a Content-Length header over the wire.', async () => {
+			await new Promise((resolve) => {
+				const received: { body: string; contentLength: string | null } = {
+					body: '',
+					contentLength: null
+				};
+
+				const server = HTTP.createServer((req, res) => {
+					received.contentLength = req.headers['content-length'] ?? null;
+
+					req.on('data', (chunk: Buffer) => {
+						received.body += chunk.toString();
+					});
+
+					req.on('end', () => {
+						res.writeHead(200, { 'Content-Type': 'application/json' });
+						res.end('{"ok":true}');
+					});
+				});
+
+				server.listen(0, '127.0.0.1', () => {
+					const serverURL = `http://127.0.0.1:${(<any>server.address()).port}`;
+					const window = new Window({ url: serverURL + '/' });
+					const request = new window.XMLHttpRequest();
+					const body = JSON.stringify({ key: 'value' });
+
+					request.open('DELETE', serverURL + '/resource', true);
+					request.setRequestHeader('Content-Type', 'application/json');
+
+					request.addEventListener('load', () => {
+						expect(received.contentLength).toBe(String(Buffer.byteLength(body)));
+						expect(received.body).toBe(body);
+						server.close();
+						resolve(null);
+					});
+
+					request.send(body);
+				});
+			});
+		}, 10000);
+
+		it('Keeps the request body buffer on the Request passed to SyncFetch for synchronous DELETE requests.', () => {
+			const body = '{"key":"value"}';
+			let capturedRequestBodyBuffer: Buffer | null = null;
+
+			vi.spyOn(SyncFetch.prototype, 'send').mockImplementation(function (this: SyncFetch) {
+				capturedRequestBodyBuffer = this.request[PropertySymbol.bodyBuffer];
+				return <ISyncResponse>{
+					status: 200,
+					ok: true,
+					statusText: 'OK',
+					headers: <Headers>new Headers()
+				};
+			});
+
+			const window = new Window({ url: WINDOW_URL });
+			const request = new window.XMLHttpRequest();
+
+			request.open('DELETE', REQUEST_URL, false);
+			request.send(body);
+
+			expect(capturedRequestBodyBuffer).toEqual(Buffer.from(body));
 		});
 	});
 });

@@ -444,11 +444,14 @@ export default class HTMLFormElement extends HTMLElement {
 					(<HTMLInputElement>element)[PropertySymbol.value] = null;
 					(<HTMLInputElement>element)[PropertySymbol.checked] = null;
 					break;
-				case 'OUTPUT':
-					(<HTMLOutputElement>element).textContent = (<HTMLOutputElement>element)[
-						PropertySymbol.defaultValue
-					];
+				case 'OUTPUT': {
+					const outputElement = <HTMLOutputElement>element;
+					const defaultValue =
+						outputElement[PropertySymbol.defaultValueOverride] ?? (outputElement.textContent || '');
+					outputElement.textContent = defaultValue;
+					outputElement[PropertySymbol.defaultValueOverride] = null;
 					break;
+				}
 				case 'SELECT':
 					let hasSelectedAttribute = false;
 					for (const option of (<HTMLSelectElement>element).options) {

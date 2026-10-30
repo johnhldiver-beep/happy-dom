@@ -192,6 +192,7 @@ export const parent = Symbol('parent');
 export const top = Symbol('top');
 export const areas = Symbol('areas');
 export const defaultValue = Symbol('defaultValue');
+export const defaultValueOverride = Symbol('defaultValueOverride');
 export const elementIdMap = Symbol('elementIdMap');
 export const clonable = Symbol('clonable');
 export const delegatesFocus = Symbol('delegatesFocus');

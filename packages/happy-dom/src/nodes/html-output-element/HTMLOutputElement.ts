@@ -15,7 +15,7 @@ export default class HTMLOutputElement extends HTMLElement {
 	public [PropertySymbol.formNode]: HTMLFormElement | null = null;
 	public [PropertySymbol.validationMessage] = '';
 	public [PropertySymbol.validity] = new ValidityState(this);
-	public [PropertySymbol.defaultValue] = '';
+	public [PropertySymbol.defaultValueOverride]: string | null = null;
 
 	/**
 	 * Returns default value.
@@ -23,7 +23,7 @@ export default class HTMLOutputElement extends HTMLElement {
 	 * @returns Default value.
 	 */
 	public get defaultValue(): string {
-		return this[PropertySymbol.defaultValue];
+		return this[PropertySymbol.defaultValueOverride] ?? (this.textContent || '');
 	}
 
 	/**
@@ -32,7 +32,11 @@ export default class HTMLOutputElement extends HTMLElement {
 	 * @param defaultValue Default value.
 	 */
 	public set defaultValue(defaultValue: string) {
-		this[PropertySymbol.defaultValue] = defaultValue;
+		if (this[PropertySymbol.defaultValueOverride] === null) {
+			this.textContent = defaultValue;
+			return;
+		}
+		this[PropertySymbol.defaultValueOverride] = defaultValue;
 	}
 
 	/**
@@ -111,6 +115,8 @@ export default class HTMLOutputElement extends HTMLElement {
 	 * @param value Value.
 	 */
 	public set value(value: string) {
+		this[PropertySymbol.defaultValueOverride] =
+			this[PropertySymbol.defaultValueOverride] ?? (this.textContent || '');
 		this.textContent = value;
 	}
 

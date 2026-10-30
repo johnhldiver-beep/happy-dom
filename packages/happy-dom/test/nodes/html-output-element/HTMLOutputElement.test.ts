@@ -1,4 +1,5 @@
 import HTMLOutputElement from '../../../src/nodes/html-output-element/HTMLOutputElement.js';
+import type HTMLFormElement from '../../../src/nodes/html-form-element/HTMLFormElement.js';
 import Window from '../../../src/window/Window.js';
 import type Document from '../../../src/nodes/document/Document.js';
 import { beforeEach, describe, it, expect } from 'vitest';
@@ -22,17 +23,68 @@ describe('HTMLOutputElement', () => {
 	});
 
 	describe('get defaultValue()', () => {
-		it('Returns default value.', () => {
+		it('Returns empty string by default.', () => {
 			expect(element.defaultValue).toBe('');
+		});
+
+		it('Returns descendant text content when no default value has been set.', () => {
+			element.innerHTML = 'saved';
+			expect(element.defaultValue).toBe('saved');
+		});
+
+		it('Returns the set default value.', () => {
 			element.defaultValue = 'Test';
 			expect(element.defaultValue).toBe('Test');
+		});
+
+		it('Returns the previous default when the value has been changed.', () => {
+			element.innerHTML = 'saved';
+			element.value = 'changed';
+			expect(element.defaultValue).toBe('saved');
 		});
 	});
 
 	describe('set defaultValue()', () => {
-		it('Returns default value.', () => {
+		it('Sets the text content when no default value has been set.', () => {
 			element.defaultValue = 'Test';
+			expect(element.textContent).toBe('Test');
 			expect(element.defaultValue).toBe('Test');
+		});
+
+		it('Sets the default value override without changing the current value.', () => {
+			element.innerHTML = 'saved';
+			element.value = 'changed';
+			element.defaultValue = 'default';
+			expect(element.textContent).toBe('changed');
+			expect(element.defaultValue).toBe('default');
+		});
+	});
+
+	describe('form reset', () => {
+		it('Does not clear an output whose default value is never overridden.', () => {
+			document.body.innerHTML = '<form><output id="o">saved</output></form>';
+			const form = <HTMLFormElement>document.querySelector('form');
+			form.reset();
+			expect((<HTMLOutputElement>document.getElementById('o')).textContent).toBe('saved');
+		});
+
+		it('Restores the initial text content after value changes.', () => {
+			document.body.innerHTML = '<form><output id="o">saved</output></form>';
+			const form = <HTMLFormElement>document.querySelector('form');
+			const output = <HTMLOutputElement>document.getElementById('o');
+			output.value = 'changed';
+			form.reset();
+			expect(output.textContent).toBe('saved');
+		});
+
+		it('Restores an explicitly set default value after a reset.', () => {
+			document.body.innerHTML = '<form><output id="o">saved</output></form>';
+			const form = <HTMLFormElement>document.querySelector('form');
+			const output = <HTMLOutputElement>document.getElementById('o');
+			output.value = 'changed';
+			output.defaultValue = 'default';
+			form.reset();
+			expect(output.textContent).toBe('default');
 		});
 	});
 

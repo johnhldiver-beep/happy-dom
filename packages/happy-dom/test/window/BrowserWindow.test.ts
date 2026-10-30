@@ -628,6 +628,29 @@ describe('BrowserWindow', () => {
 		});
 	});
 
+	describe('Web Streams', () => {
+		it('Exposes WHATWG stream classes that compose with each other.', async () => {
+			const chunks: string[] = [];
+
+			await new window.ReadableStream({
+				start(controller) {
+					controller.enqueue('chunk');
+					controller.close();
+				}
+			})
+				.pipeThrough(new window.TransformStream())
+				.pipeTo(
+					new window.WritableStream({
+						write(chunk) {
+							chunks.push(chunk);
+						}
+					})
+				);
+
+			expect(chunks).toEqual(['chunk']);
+		});
+	});
+
 	describe('eval()', () => {
 		it('Respects direct eval.', () => {
 			const result = window.eval(`

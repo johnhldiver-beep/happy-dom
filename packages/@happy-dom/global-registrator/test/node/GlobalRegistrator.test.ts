@@ -1,6 +1,11 @@
 import GlobalRegistrator from '../../lib/GlobalRegistrator.js';
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
+import {
+	WritableStream as WebWritableStream,
+	TransformStream as WebTransformStream
+} from 'node:stream/web';
+import Stream from 'node:stream';
 
 const GETTERS = [
 	'location',
@@ -109,6 +114,17 @@ describe('GlobalRegistrator', () => {
 			assert.strictEqual(globalThis.innerWidth, 1920);
 			assert.strictEqual(globalThis.innerHeight, 1080);
 			assert.strictEqual(globalThis.navigator.userAgent, 'Custom User Agent');
+
+			GlobalRegistrator.unregister();
+		});
+
+		it('Exposes the WHATWG stream classes on the global object', () => {
+			GlobalRegistrator.register();
+
+			assert.strictEqual(globalThis.WritableStream, WebWritableStream);
+			assert.strictEqual(globalThis.TransformStream, WebTransformStream);
+			assert.notStrictEqual(globalThis.WritableStream, Stream.Writable);
+			assert.notStrictEqual(globalThis.TransformStream, Stream.Transform);
 
 			GlobalRegistrator.unregister();
 		});
